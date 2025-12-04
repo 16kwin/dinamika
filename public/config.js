@@ -1,4 +1,8 @@
 window.config = {
-  // Указываем домен или localhost если работаем на своем компе в dev
-  ip_api: 'http://localhost',
+  // Автоматически определяем IP API в зависимости от того, где запущено
+  ip_api: window.location.hostname === 'localhost' || 
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.includes('192.168.')
+          ? 'http://localhost' 
+          : 'http://109.69.22.155'
 };
