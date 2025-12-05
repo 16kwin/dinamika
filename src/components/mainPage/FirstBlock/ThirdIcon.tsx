@@ -1,6 +1,6 @@
 // ThirdIcon.tsx
 import React from 'react';
-import Image5 from '../../../assets/Menu/image5.svg';
+import Image5 from '../../../assets/Menu/image.svg';
 const ThirdIcon: React.FC = () => {
   return (
     <div 
