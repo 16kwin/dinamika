@@ -6,11 +6,25 @@ interface MenuItemProps {
   isExpanded: boolean;
   isActive: boolean;
   onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, isExpanded, isActive, onClick }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ 
+  icon, 
+  text, 
+  isExpanded, 
+  isActive, 
+  onClick,
+  onMouseEnter,
+  onMouseLeave
+}) => {
   return (
-    <div className="relative">
+    <div 
+      className="relative"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {/* Кнопка когда активна */}
       {isActive && (
         <button

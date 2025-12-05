@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MenuItem from './MenuItem';
 import Logo from './Logo';
@@ -28,6 +28,8 @@ interface LeftBlockProps {
 const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouseLeave }) => {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>('item1');
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [hasBeenHovered, setHasBeenHovered] = useState<boolean>(false);
 
   // Массив кнопок с иконками, размерами и путями
   const menuItems = [
@@ -116,8 +118,29 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
   // Обработчик клика по кнопке меню
   const handleMenuItemClick = (itemId: string, path: string) => {
     setActiveItem(itemId);
+    setHasBeenHovered(false);
     navigate(path);
   };
+
+  // Обработчики наведения
+  const handleMouseEnter = (itemId: string) => {
+    setHoveredItem(itemId);
+    if (isExpanded) {
+      setHasBeenHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredItem(null);
+  };
+
+  // Сбрасываем hasBeenHovered при сворачивании
+  useEffect(() => {
+    if (!isExpanded) {
+      setHasBeenHovered(false);
+      setHoveredItem(null);
+    }
+  }, [isExpanded]);
 
   // Компонент иконки для MenuItem
   const MenuIcon = ({ itemId, isActive }: { itemId: string, isActive: boolean }) => {
@@ -151,9 +174,25 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
     );
   };
 
+  // Определяем, должна ли кнопка быть белой
+  const shouldBeWhite = (itemId: string) => {
+    // В свернутом состоянии: только если активна
+    if (!isExpanded) {
+      return activeItem === itemId;
+    }
+    
+    // В развернутом состоянии:
+    // 1. Если было наведение на какую-то кнопку (hasBeenHovered = true)
+    if (hasBeenHovered) {
+      return hoveredItem === itemId; // только наведенная кнопка белая
+    }
+    // 2. Если еще не было наведения (первый раз развернули)
+    return activeItem === itemId; // активная кнопка белая
+  };
+
   return (
     <div 
-      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-10 transition-all duration-300 rounded-[5px] bg-[#3E4E77] flex flex-col ${
+      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-10 transition-all duration-300 rounded-[25px] bg-[#3E4E77] flex flex-col ${
         isExpanded ? 'w-[290px]' : 'w-[110px]'
       }`}
       onMouseEnter={onMouseEnter}
@@ -165,11 +204,13 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
       {/* 2. Значок 1 (отдельный) */}
       <div className="pt-[20px]">
         <MenuItem
-          icon={<MenuIcon itemId="item1" isActive={activeItem === 'item1'} />}
+          icon={<MenuIcon itemId="item1" isActive={shouldBeWhite('item1')} />}
           text={menuItems[0].text}
           isExpanded={isExpanded}
-          isActive={activeItem === 'item1'}
+          isActive={shouldBeWhite('item1')}
           onClick={() => handleMenuItemClick('item1', menuItems[0].path)}
+          onMouseEnter={() => handleMouseEnter('item1')}
+          onMouseLeave={handleMouseLeave}
         />
       </div>
 
@@ -196,11 +237,13 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
         {menuItems.slice(1, 4).map((item) => (
           <div key={item.id} className="py-[2px]">
             <MenuItem
-              icon={<MenuIcon itemId={item.id} isActive={activeItem === item.id} />}
+              icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} />}
               text={item.text}
               isExpanded={isExpanded}
-              isActive={activeItem === item.id}
+              isActive={shouldBeWhite(item.id)}
               onClick={() => handleMenuItemClick(item.id, item.path)}
+              onMouseEnter={() => handleMouseEnter(item.id)}
+              onMouseLeave={handleMouseLeave}
             />
           </div>
         ))}
@@ -227,11 +270,13 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
         {menuItems.slice(4, 6).map((item) => (
           <div key={item.id} className="py-[2px]">
             <MenuItem
-              icon={<MenuIcon itemId={item.id} isActive={activeItem === item.id} />}
+              icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} />}
               text={item.text}
               isExpanded={isExpanded}
-              isActive={activeItem === item.id}
+              isActive={shouldBeWhite(item.id)}
               onClick={() => handleMenuItemClick(item.id, item.path)}
+              onMouseEnter={() => handleMouseEnter(item.id)}
+              onMouseLeave={handleMouseLeave}
             />
           </div>
         ))}
@@ -243,11 +288,13 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
       {/* 8. Значок 3 (отдельный) */}
       <div className="py-[2px]">
         <MenuItem
-          icon={<MenuIcon itemId="item7" isActive={activeItem === 'item7'} />}
+          icon={<MenuIcon itemId="item7" isActive={shouldBeWhite('item7')} />}
           text={menuItems[6].text}
           isExpanded={isExpanded}
-          isActive={activeItem === 'item7'}
+          isActive={shouldBeWhite('item7')}
           onClick={() => handleMenuItemClick('item7', menuItems[6].path)}
+          onMouseEnter={() => handleMouseEnter('item7')}
+          onMouseLeave={handleMouseLeave}
         />
       </div>
 
@@ -265,11 +312,13 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
         isExpanded ? '' : 'pt-[15px]'
       }`}>
         <MenuItem
-          icon={<MenuIcon itemId="item8" isActive={activeItem === 'item8'} />}
+          icon={<MenuIcon itemId="item8" isActive={shouldBeWhite('item8')} />}
           text={menuItems[7].text}
           isExpanded={isExpanded}
-          isActive={activeItem === 'item8'}
+          isActive={shouldBeWhite('item8')}
           onClick={() => handleMenuItemClick('item8', menuItems[7].path)}
+          onMouseEnter={() => handleMouseEnter('item8')}
+          onMouseLeave={handleMouseLeave}
         />
       </div>
     </div>

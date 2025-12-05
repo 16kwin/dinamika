@@ -1,14 +1,14 @@
+// MainPage.tsx
 import React from 'react';
+import FirstBlock from './FirstBlock/FirstBlock';
 
 const MainPage = () => {
   return (
-    <div className="h-full">
+    <div className="h-full bg-[#F5F7F9]">
       {/* Правая часть */}
       <div className="grid grid-rows-[70px_4px_40px_20px_150px_60px_1fr] gap-0 h-full">
         {/* Блок 1 (верхний) - БЕЗ отступа справа */}
-        <div className="bg-gray-200 rounded-none flex items-center justify-center">
-          <span className="text-gray-600 font-medium">В разработке</span>
-        </div>
+        <FirstBlock />
 
         {/* Отступ между 1 и 2 блоком (4px) */}
         <div></div>

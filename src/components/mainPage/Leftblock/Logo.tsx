@@ -7,7 +7,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ isExpanded }) => {
   return (
-    <div className={`pt-[75px] ${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} pb-4`}>
+    <div className={`pt-[60px] ${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} pb-4`}>
       <div className="flex items-end h-[52px]">
         <div className="flex items-center justify-center flex-shrink-0">
           <img src={LogoIcon} alt="Logo" className="w-[60px] h-[52px]" />
