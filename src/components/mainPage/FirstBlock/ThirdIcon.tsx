@@ -8,7 +8,7 @@ const ThirdIcon: React.FC = () => {
       style={{
         width: '305px',
         height: '40px',
-        top: '12px',
+        top: '13px',
         right: '310px', // сохраняем отступ от правого края// скругление только снизу
       }}
     > <img 
