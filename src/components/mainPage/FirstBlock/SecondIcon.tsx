@@ -11,17 +11,17 @@ const SecondIcon: React.FC = () => {
 
   return (
     <div 
-      className="w-[130px] h-[70px] rounded-bl-[25px] relative"
+      className="w-[111px] h-[60px] relative"
       style={{ backgroundColor: '#3E4E77' }}
     >
       {/* Иконка */}
       <div
         className="absolute"
         style={{
-          left: '22px',
-          top: '16px',
-          width: '36px',
-          height: '34px'
+          left: '19px',
+          top: '14px',
+          width: '31px',
+          height: '30px'
         }}
       >
         <img 
@@ -36,23 +36,23 @@ const SecondIcon: React.FC = () => {
         onClick={handleToggle}
         className="absolute cursor-pointer focus:outline-none transition-all duration-300"
         style={{
-          right: '14px',
-          top: '25px',
-          width: '45px',
-          height: '19px',
+          right: '12px',
+          top: '21px',
+          width: '38px',
+          height: '16px',
           backgroundColor: '#F5F7F9',
-          borderRadius: '9.5px'
+          borderRadius: '8px'
         }}
       >
         {/* Круг-переключатель */}
         <div
           className="absolute top-0 transition-all duration-300"
           style={{
-            left: isToggled ? 'calc(45px - 19px)' : '0',
-            width: '19px',
-            height: '19px',
+            left: isToggled ? 'calc(38px - 16px)' : '0',
+            width: '16px',
+            height: '16px',
             backgroundColor: '#8E8A8A',
-            borderRadius: '9.5px'
+            borderRadius: '8px'
           }}
         />
       </button>

@@ -29,7 +29,6 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>('item1');
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [hasBeenHovered, setHasBeenHovered] = useState<boolean>(false);
 
   // Массив кнопок с иконками, размерами и путями
   const menuItems = [
@@ -118,32 +117,27 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
   // Обработчик клика по кнопке меню
   const handleMenuItemClick = (itemId: string, path: string) => {
     setActiveItem(itemId);
-    setHasBeenHovered(false);
     navigate(path);
   };
 
   // Обработчики наведения
   const handleMouseEnter = (itemId: string) => {
     setHoveredItem(itemId);
-    if (isExpanded) {
-      setHasBeenHovered(true);
-    }
   };
 
   const handleMouseLeave = () => {
     setHoveredItem(null);
   };
 
-  // Сбрасываем hasBeenHovered при сворачивании
+  // Сбрасываем hoveredItem при сворачивании
   useEffect(() => {
     if (!isExpanded) {
-      setHasBeenHovered(false);
       setHoveredItem(null);
     }
   }, [isExpanded]);
 
   // Компонент иконки для MenuItem
-  const MenuIcon = ({ itemId, isActive }: { itemId: string, isActive: boolean }) => {
+  const MenuIcon = ({ itemId, isActive, isBlue }: { itemId: string, isActive: boolean, isBlue: boolean }) => {
     const item = menuItems.find(item => item.id === itemId);
     
     if (!item) return null;
@@ -156,7 +150,14 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
     }
     
     // Для остальных кнопок - SVG иконки
-    const iconSrc = isActive ? item.activeIcon : item.inactiveIcon;
+    let iconSrc;
+    if (isActive) {
+      iconSrc = item.activeIcon; // Белая иконка для активной кнопки
+    } else if (isBlue) {
+      iconSrc = item.activeIcon; // Белая иконка для голубой кнопки
+    } else {
+      iconSrc = item.inactiveIcon; // Цветная иконка для неактивной
+    }
     
     if (!iconSrc) return null;
     
@@ -174,153 +175,193 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
     );
   };
 
-  // Определяем, должна ли кнопка быть белой
+  // Определяем, должна ли кнопка быть белой (активной)
   const shouldBeWhite = (itemId: string) => {
-    // В свернутом состоянии: только если активна
-    if (!isExpanded) {
-      return activeItem === itemId;
-    }
-    
-    // В развернутом состоянии:
-    // 1. Если было наведение на какую-то кнопку (hasBeenHovered = true)
-    if (hasBeenHovered) {
-      return hoveredItem === itemId; // только наведенная кнопка белая
-    }
-    // 2. Если еще не было наведения (первый раз развернули)
-    return activeItem === itemId; // активная кнопка белая
+    return activeItem === itemId;
+  };
+
+  // Определяем, должна ли кнопка быть голубой
+  const shouldBeBlue = (itemId: string) => {
+    // Кнопка голубая если:
+    // 1. Она наведена
+    // 2. И она не активна
+    // 3. И бокс развернут
+    if (!isExpanded) return false;
+    return hoveredItem === itemId && activeItem !== itemId;
   };
 
   return (
     <div 
-      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-10 transition-all duration-300 rounded-[25px] bg-[#3E4E77] flex flex-col ${
-        isExpanded ? 'w-[290px]' : 'w-[110px]'
+      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-10 transition-all duration-300 rounded-[25px] bg-[#3E4E77] flex flex-col overflow-hidden ${
+        isExpanded ? 'w-[270px]' : 'w-[90px]'
       }`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       {/* 1. Логотип */}
-      <Logo isExpanded={isExpanded} />
+      <div>
+        <Logo 
+          isExpanded={isExpanded}
+          onClick={() => handleMenuItemClick('item1', '/main')}
+          onMouseEnter={() => handleMouseEnter('item1')}
+          onMouseLeave={handleMouseLeave}
+        />
+      </div>
 
-      {/* 2. Значок 1 (отдельный) */}
-      <div className="pt-[20px]">
+      {/* 2. Отступ от логотипа до первой кнопки - 60px */}
+      <div className="h-[40px]"></div>
+
+      {/* 3. Первая кнопка - высота 60px */}
+      <div className="h-[60px]">
         <MenuItem
-          icon={<MenuIcon itemId="item1" isActive={shouldBeWhite('item1')} />}
+          icon={<MenuIcon itemId="item1" isActive={shouldBeWhite('item1')} isBlue={shouldBeBlue('item1')} />}
           text={menuItems[0].text}
           isExpanded={isExpanded}
           isActive={shouldBeWhite('item1')}
+          isBlue={shouldBeBlue('item1')}
           onClick={() => handleMenuItemClick('item1', menuItems[0].path)}
           onMouseEnter={() => handleMouseEnter('item1')}
           onMouseLeave={handleMouseLeave}
         />
       </div>
 
-      {/* 3. Первая линия → Рабочий блок */}
-      <div className={`${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} ${
-        isExpanded ? 'pt-[8px]' : 'pt-[20px]'
-      }`}>
-        <div className="flex items-center">
-          <div className={`h-px flex-grow bg-[#4A5D8A] ${
-            isExpanded ? 'hidden' : 'block'
-          }`} style={{ height: '2px' }}></div>
-          <div className={`transition-all duration-300 overflow-hidden whitespace-nowrap h-[16px] ${
-            isExpanded ? 'opacity-100 w-auto text-gray-300 text-xs font-medium' : 'opacity-0 w-0'
-          }`}>
-            Рабочий блок
+      {/* 4. От первой кнопки до линии - 51px */}
+      <div className={isExpanded ? 'h-[43px]' : 'h-[51px]'}></div>
+
+      {/* 5. Первая линия/текст */}
+      <div>
+        {isExpanded ? (
+          // Текст "Рабочий блок" при развернутом состоянии
+          <div className="h-[25px] pl-5 flex items-center">
+            <div className="text-gray-300 text-xs font-medium whitespace-nowrap">
+              Рабочий блок
+            </div>
           </div>
-        </div>
+        ) : (
+          // Линия при свернутом состоянии
+          <div className="h-[4px] ">
+            <div className="h-full bg-[#4A5D8A]"></div>
+          </div>
+        )}
       </div>
 
-      {/* 4. Три значка (группа 1) */}
-      <div className={`flex flex-col ${
-        isExpanded ? '' : 'pt-[15px]'
-      }`}>
-        {menuItems.slice(1, 4).map((item) => (
-          <div key={item.id} className="py-[2px]">
-            <MenuItem
-              icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} />}
-              text={item.text}
-              isExpanded={isExpanded}
-              isActive={shouldBeWhite(item.id)}
-              onClick={() => handleMenuItemClick(item.id, item.path)}
-              onMouseEnter={() => handleMouseEnter(item.id)}
-              onMouseLeave={handleMouseLeave}
-            />
-          </div>
+      {/* 6. Отступ после первой линии/текста */}
+      <div className={isExpanded ? 'h-[17px]' : 'h-[30px]'}></div>
+
+      {/* 7. Три значка (группа 1) - каждый 60px высота, между ними 12px */}
+      <div className="flex flex-col">
+        {menuItems.slice(1, 4).map((item, index) => (
+          <React.Fragment key={item.id}>
+            {/* Кнопка */}
+            <div className="h-[60px]">
+              <MenuItem
+                icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} isBlue={shouldBeBlue(item.id)} />}
+                text={item.text}
+                isExpanded={isExpanded}
+                isActive={shouldBeWhite(item.id)}
+                isBlue={shouldBeBlue(item.id)}
+                onClick={() => handleMenuItemClick(item.id, item.path)}
+                onMouseEnter={() => handleMouseEnter(item.id)}
+                onMouseLeave={handleMouseLeave}
+              />
+            </div>
+            {/* Отступ между кнопками (кроме последней) */}
+            {index < 2 && <div className="h-[12px]"></div>}
+          </React.Fragment>
         ))}
       </div>
 
-      {/* 5. Вторая линия → Аналитический блок */}
-      <div className={`${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} pt-[10px] pb-[4px]`}>
-        <div className="flex items-center">
-          <div className={`h-px flex-grow bg-[#4A5D8A] ${
-            isExpanded ? 'hidden' : 'block'
-          }`} style={{ height: '2px' }}></div>
-          <div className={`transition-all duration-300 overflow-hidden whitespace-nowrap h-[16px] ${
-            isExpanded ? 'opacity-100 w-auto text-gray-300 text-xs font-medium' : 'opacity-0 w-0'
-          }`}>
-            Аналитический блок
+      {/* 8. От последней кнопки группы до второй линии/текста */}
+      <div className={isExpanded ? 'h-[22px]' : 'h-[30px]'}></div>
+
+      {/* 9. Вторая линия/текст */}
+      <div >
+        {isExpanded ? (
+          // Текст "Аналитический блок" при развернутом состоянии
+          <div className="h-[25px] pl-5 flex items-center">
+            <div className="text-gray-300 text-xs font-medium whitespace-nowrap">
+              Аналитический блок
+            </div>
           </div>
-        </div>
+        ) : (
+          // Линия при свернутом состоянии
+          <div className="h-[4px]">
+            <div className="h-full bg-[#4A5D8A]"></div>
+          </div>
+        )}
       </div>
 
-      {/* 6. Два значка (группа 2) */}
-      <div className={`flex flex-col ${
-        isExpanded ? '' : 'pt-[15px]'
-      }`}>
-        {menuItems.slice(4, 6).map((item) => (
-          <div key={item.id} className="py-[2px]">
-            <MenuItem
-              icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} />}
-              text={item.text}
-              isExpanded={isExpanded}
-              isActive={shouldBeWhite(item.id)}
-              onClick={() => handleMenuItemClick(item.id, item.path)}
-              onMouseEnter={() => handleMouseEnter(item.id)}
-              onMouseLeave={handleMouseLeave}
-            />
-          </div>
+      {/* 10. Отступ после второй линии/текста */}
+      <div className={isExpanded ? 'h-[17px]' : 'h-[30px]'}></div>
+
+      {/* 11. Два значка (группа 2) - каждый 60px высота, между ними 12px */}
+      <div className="flex flex-col">
+        {menuItems.slice(4, 6).map((item, index) => (
+          <React.Fragment key={item.id}>
+            {/* Кнопка */}
+            <div className="h-[60px]">
+              <MenuItem
+                icon={<MenuIcon itemId={item.id} isActive={shouldBeWhite(item.id)} isBlue={shouldBeBlue(item.id)} />}
+                text={item.text}
+                isExpanded={isExpanded}
+                isActive={shouldBeWhite(item.id)}
+                isBlue={shouldBeBlue(item.id)}
+                onClick={() => handleMenuItemClick(item.id, item.path)}
+                onMouseEnter={() => handleMouseEnter(item.id)}
+                onMouseLeave={handleMouseLeave}
+              />
+            </div>
+            {/* Отступ между кнопками (кроме последней) */}
+            {index < 1 && <div className="h-[12px]"></div>}
+          </React.Fragment>
         ))}
       </div>
 
-      {/* 7. Пропуск (отступ) */}
+      {/* 12. Пропуск (отступ) до нижних кнопок */}
       <div className="flex-grow"></div>
 
-      {/* 8. Значок 3 (отдельный) */}
-      <div className="py-[2px]">
+      {/* 13. Отступ от низа до кнопки настроек - 5px */}
+      <div className="h-[5px]"></div>
+
+      {/* 14. Значок настройки - высота 60px */}
+      <div className="h-[60px]">
         <MenuItem
-          icon={<MenuIcon itemId="item7" isActive={shouldBeWhite('item7')} />}
+          icon={<MenuIcon itemId="item7" isActive={shouldBeWhite('item7')} isBlue={shouldBeBlue('item7')} />}
           text={menuItems[6].text}
           isExpanded={isExpanded}
           isActive={shouldBeWhite('item7')}
+          isBlue={shouldBeBlue('item7')}
           onClick={() => handleMenuItemClick('item7', menuItems[6].path)}
           onMouseEnter={() => handleMouseEnter('item7')}
           onMouseLeave={handleMouseLeave}
         />
       </div>
 
-      {/* 9. Третья линия → остается линией (без текста) */}
-      <div className={`${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} pt-[10px] pb-[4px]`}>
-        <div className="flex items-center">
-          <div className="h-px flex-grow bg-[#4A5D8A]" style={{ height: '2px' }}></div>
-          {/* Нет текста для третьей линии */}
-          <div className="opacity-0 w-0"></div>
-        </div>
+      {/* 15. От кнопки настроек до линии - 10px */}
+      <div className="h-[10px]"></div>
+
+      {/* 16. Третья линия - высота 4px */}
+      <div className={`h-[4px] `}>
+        <div className="h-full bg-[#4A5D8A]"></div>
       </div>
 
-      {/* 10. Значок 4 (отдельный, внизу) */}
-      <div className={`py-[2px] mb-2 ${
-        isExpanded ? '' : 'pt-[15px]'
-      }`}>
+      {/* 17. От линии до кнопки аккаунта - 5px */}
+      <div className="h-[5px]"></div>
+
+      {/* 18. Значок аккаунта - высота 60px */}
+      <div className="h-[60px]">
         <MenuItem
-          icon={<MenuIcon itemId="item8" isActive={shouldBeWhite('item8')} />}
+          icon={<MenuIcon itemId="item8" isActive={shouldBeWhite('item8')} isBlue={shouldBeBlue('item8')} />}
           text={menuItems[7].text}
           isExpanded={isExpanded}
           isActive={shouldBeWhite('item8')}
+          isBlue={shouldBeBlue('item8')}
           onClick={() => handleMenuItemClick('item8', menuItems[7].path)}
           onMouseEnter={() => handleMouseEnter('item8')}
           onMouseLeave={handleMouseLeave}
         />
       </div>
+      <div className="h-[5px]"></div>
     </div>
   );
 };

@@ -21,9 +21,7 @@ const FirstBlock: React.FC = () => {
         {/* Первый блок */}
         <FirstIcon />
         
-        {/* Отступ 3px между блоками */}
-        <div className="w-[3px]"></div>
-        
+
         {/* Второй блок */}
         <SecondIcon />
       </div>

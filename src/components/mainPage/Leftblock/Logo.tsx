@@ -3,11 +3,19 @@ import LogoIcon from '../../../assets/Menu/logo.png';
 
 interface LogoProps {
   isExpanded: boolean;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-const Logo: React.FC<LogoProps> = ({ isExpanded }) => {
+const Logo: React.FC<LogoProps> = ({ isExpanded, onClick, onMouseEnter, onMouseLeave }) => {
   return (
-    <div className={`pt-[60px] ${isExpanded ? 'pl-[25px] pr-4' : 'pl-[25px] pr-[25px]'} pb-4`}>
+    <div 
+      className={`pt-[60px] ${isExpanded ? 'pl-[15px] pr-4' : 'pl-[15px] pr-[15px]'} pb-4 cursor-pointer`}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <div className="flex items-end h-[52px]">
         <div className="flex items-center justify-center flex-shrink-0">
           <img src={LogoIcon} alt="Logo" className="w-[60px] h-[52px]" />
@@ -22,9 +30,9 @@ const Logo: React.FC<LogoProps> = ({ isExpanded }) => {
               className="text-white font-black mb-[2px]"
               style={{ 
                 fontFamily: 'Roboto, sans-serif',
-                fontSize: '18px',
+                fontSize: '20px',
                 lineHeight: '24px',
-                letterSpacing: '0.18em',
+                letterSpacing: '0.25em',
                 width: '168px',
                 whiteSpace: 'nowrap'
               }}
@@ -37,7 +45,7 @@ const Logo: React.FC<LogoProps> = ({ isExpanded }) => {
               className="text-white font-black"
               style={{ 
                 fontFamily: 'Roboto, sans-serif',
-                fontSize: '9px',
+                fontSize: '10px',
                 lineHeight: '12px',
                 letterSpacing: '0em',
                 width: '168px',

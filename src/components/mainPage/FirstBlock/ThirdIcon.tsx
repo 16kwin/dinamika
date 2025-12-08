@@ -6,10 +6,10 @@ const ThirdIcon: React.FC = () => {
     <div 
       className="absolute"
       style={{
-        width: '305px',
-        height: '40px',
-        top: '13px',
-        right: '310px', // сохраняем отступ от правого края// скругление только снизу
+        width: '260px',
+        height: '34px',
+        top: '11px',
+        right: '264px', // сохраняем отступ от правого края// скругление только снизу
       }}
     > <img 
           src={Image5} 

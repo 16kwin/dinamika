@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LeftBlock from '../components/mainPage/Leftblock/Leftblock';
+import FirstBlock from '../components/mainPage/FirstBlock/FirstBlock';
 
 const MainLayout = () => {
   const { isAuth, isLoading } = useAuth();
@@ -29,7 +30,11 @@ const MainLayout = () => {
 
       {/* Правая часть - фиксированный отступ */}
       <div className="h-full absolute left-[140px] right-0 top-0 bottom-0 overflow-auto">
-        <div className="h-full">
+        {/* Верхний блок (FirstBlock) - всегда видимый */}
+        <FirstBlock />
+        
+        {/* Контейнер для остального контента с прокруткой */}
+        <div className="h-[calc(100%-70px)] overflow-auto">
           <Outlet />
         </div>
       </div>

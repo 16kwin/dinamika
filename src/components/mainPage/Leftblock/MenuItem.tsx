@@ -5,6 +5,7 @@ interface MenuItemProps {
   text: string;
   isExpanded: boolean;
   isActive: boolean;
+  isBlue: boolean;
   onClick: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -14,7 +15,8 @@ const MenuItem: React.FC<MenuItemProps> = ({
   icon, 
   text, 
   isExpanded, 
-  isActive, 
+  isActive,
+  isBlue, 
   onClick,
   onMouseEnter,
   onMouseLeave
@@ -39,15 +41,15 @@ const MenuItem: React.FC<MenuItemProps> = ({
             overflow-hidden
             h-[60px]
             bg-[#F5F7F9]
-            ${isExpanded ? 'rounded-l-[5px]' : 'rounded-[5px]'}
+            ${isExpanded ? 'rounded-l-[15px]' : 'rounded-[15px]'}
             hover:transform
             hover:translate-y-[-2px]
             z-10
           `}
           style={{
-            width: isExpanded ? 'calc(100% - 25px)' : '60px',
-            marginLeft: isExpanded ? '25px' : '25px',
-            marginRight: isExpanded ? '0' : '25px'
+            width: isExpanded ? 'calc(100% - 15px)' : '60px',
+            marginLeft: isExpanded ? '15px' : '15px',
+            marginRight: isExpanded ? '0' : '15px'
           }}
         >
           {/* Иконка */}
@@ -77,7 +79,59 @@ const MenuItem: React.FC<MenuItemProps> = ({
         </button>
       )}
 
-      {/* Кнопка когда неактивна */}
+      {/* Кнопка когда голубая */}
+      {!isActive && isBlue && (
+        <button
+          onClick={onClick}
+          className={`
+            absolute
+            flex
+            items-center
+            transition-all
+            duration-300
+            cursor-pointer
+            overflow-hidden
+            h-[60px]
+            bg-[#C0C0D0]
+            ${isExpanded ? 'rounded-l-[15px]' : 'rounded-[15px]'}
+            hover:transform
+            hover:translate-y-[-2px]
+            z-10
+          `}
+          style={{
+            width: isExpanded ? 'calc(100% - 15px)' : '60px',
+            marginLeft: isExpanded ? '15px' : '15px',
+            marginRight: isExpanded ? '0' : '15px'
+          }}
+        >
+          {/* Иконка */}
+          <div className="flex items-center justify-center flex-shrink-0 w-[60px] h-[60px]">
+            {icon}
+          </div>
+
+          {/* Текст */}
+          <div className={`
+            transition-all
+            duration-300
+            overflow-hidden
+            whitespace-nowrap
+            ${isExpanded ? 'opacity-100 w-auto pr-4' : 'opacity-0 w-0'}
+            text-[#3E4E77] font-medium
+          `}>
+            {text}
+          </div>
+
+          {/* Эффект вырезанной кнопки - правые полукруги */}
+          {isExpanded && (
+            <>
+              <div className="absolute top-[-20px] right-0 w-[20px] h-[20px] bg-[#3E4E77] rounded-br-full"></div>
+              <div className="absolute bottom-[-20px] right-0 w-[20px] h-[20px] bg-[#3E4E77] rounded-tr-full"></div>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Кнопка когда неактивна и не голубая */}
       <button
         onClick={onClick}
         className={`
@@ -92,12 +146,12 @@ const MenuItem: React.FC<MenuItemProps> = ({
           bg-transparent
           hover:transform
           hover:translate-y-[-2px]
-          ${isActive ? 'opacity-0' : 'opacity-100'}
+          ${isActive || isBlue ? 'opacity-0' : 'opacity-100'}
         `}
         style={{
-          width: isExpanded ? 'calc(100% - 25px)' : '60px',
-          marginLeft: isExpanded ? '25px' : '25px',
-          marginRight: isExpanded ? '0' : '25px'
+          width: isExpanded ? 'calc(100% - 15px)' : '60px',
+          marginLeft: isExpanded ? '15px' : '15px',
+          marginRight: isExpanded ? '0' : '15px'
         }}
       >
         {/* Иконка */}

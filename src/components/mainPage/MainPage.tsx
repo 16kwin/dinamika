@@ -1,15 +1,9 @@
-// MainPage.tsx
 import React from 'react';
-import FirstBlock from './FirstBlock/FirstBlock';
 
 const MainPage = () => {
   return (
     <div className="h-full bg-[#F5F7F9]">
-      {/* Правая часть */}
-      <div className="grid grid-rows-[70px_4px_40px_20px_150px_60px_1fr] gap-0 h-full">
-        {/* Блок 1 (верхний) - БЕЗ отступа справа */}
-        <FirstBlock />
-
+      <div className="grid grid-rows-[4px_40px_20px_150px_60px_1fr] gap-0 h-full pt-4">
         {/* Отступ между 1 и 2 блоком (4px) */}
         <div></div>
 

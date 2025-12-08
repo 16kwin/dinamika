@@ -28,7 +28,7 @@ const FirstIcon: React.FC = () => {
 
   return (
     <div 
-      className="w-[157px] h-[70px] rounded-b-[25px] relative"
+      className="w-[133px] h-[60px] rounded-bl-[25px] relative"
       style={{ backgroundColor: '#3E4E77' }}
     >
       {/* Первая кнопка с иконкой (уведомления) */}
@@ -36,10 +36,10 @@ const FirstIcon: React.FC = () => {
         onClick={handleIcon1Click}
         className="absolute cursor-pointer focus:outline-none"
         style={{
-          left: '28px',
-          top: '17px',
-          width: '30px',
-          height: '36px'
+          left: '24px',
+          top: '15px',
+          width: '25px',
+          height: '31px'
         }}
       >
         <img 
@@ -54,10 +54,10 @@ const FirstIcon: React.FC = () => {
         onClick={handleIcon2Click}
         className="absolute cursor-pointer focus:outline-none"
         style={{
-          left: '93px', // 28px + 30px + 35px
-          top: '16px',
-          width: '36px',
-          height: '36px'
+          left: '80px', // 28px + 30px + 35px
+          top: '14px',
+          width: '31px',
+          height: '31px'
         }}
       >
         <img 
