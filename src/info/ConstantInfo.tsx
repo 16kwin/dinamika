@@ -10,7 +10,9 @@ const ConstantInfo = {
   restApiRefreshToken: '/api/auth/refresh_token',
   restApiLogout: '/logout',
   checkAuthPeriod: 50000, // таймер проверки авторизации (в мс)
-
+  restApiLocationHierarchy: '/api/locations/hierarchy/first',
+   restApiCreateLocation: '/api/locations',
+  restApiCreateStation: '/api/stations',
 };
 
 export default ConstantInfo;
