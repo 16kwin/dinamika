@@ -192,7 +192,7 @@ const LeftBlock: React.FC<LeftBlockProps> = ({ isExpanded, onMouseEnter, onMouse
 
   return (
     <div 
-      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-10 transition-all duration-300 rounded-[25px] bg-[#3E4E77] flex flex-col overflow-hidden ${
+      className={`h-[calc(100%-30px)] absolute left-[15px] top-[15px] z-[9999] transition-all duration-300 rounded-[25px] bg-[#3E4E77] flex flex-col overflow-hidden ${
         isExpanded ? 'w-[270px]' : 'w-[90px]'
       }`}
       onMouseEnter={onMouseEnter}
