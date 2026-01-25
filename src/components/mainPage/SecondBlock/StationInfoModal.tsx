@@ -1,4 +1,3 @@
-// StationInfoModal.tsx
 import React from 'react';
 
 interface StationDTO {
@@ -7,6 +6,13 @@ interface StationDTO {
   modelNumber: string;
   serialNumber: string;
   currentCapacity: number;
+  isEnabled: boolean;
+  capacity: number | null;
+  fullness: number | null;
+  hasErrors: boolean;
+  issued: number | null;
+  issuedOverNorm: number | null;
+  finishedParts: number | null;
 }
 
 interface StationInfoModalProps {
@@ -61,13 +67,76 @@ const StationInfoModal: React.FC<StationInfoModalProps> = ({
               </label>
               <div className="text-gray-900">{station.serialNumber}</div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Статус
+              </label>
+              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                station.isEnabled 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {station.isEnabled ? 'Включена' : 'Выключена'}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ошибки
+              </label>
+              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                station.hasErrors 
+                  ? 'bg-red-100 text-red-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {station.hasErrors ? 'Есть ошибки' : 'Нет ошибок'}
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Текущая емкость
-            </label>
-            <div className="text-gray-900">{station.currentCapacity}</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Текущая емкость
+              </label>
+              <div className="text-gray-900">{station.currentCapacity}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Вместимость
+              </label>
+              <div className="text-gray-900">{station.capacity ?? 'Не указано'}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Заполненность
+              </label>
+              <div className="text-gray-900">{station.fullness ?? 'Не указано'}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Выдано
+              </label>
+              <div className="text-gray-900">{station.issued ?? 'Не указано'}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Выдано сверхнормы
+              </label>
+              <div className="text-gray-900">{station.issuedOverNorm ?? 'Не указано'}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Готовых деталей
+              </label>
+              <div className="text-gray-900">{station.finishedParts ?? 'Не указано'}</div>
+            </div>
           </div>
         </div>
 

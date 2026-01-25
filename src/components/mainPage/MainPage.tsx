@@ -1,11 +1,34 @@
 import React, { useState } from 'react';
 import SecondBlock from './SecondBlock/SecondBlock';
+import ThirdBlock from './ThirdBlock/ThirdBlock';
+import Dashboards from './Dashboards/Daschboards';
+import type { LocationHierarchyDTO, StationDTO } from './SecondBlock/SecondBlock';
 
 const MainPage = () => {
   const [isBlock3Visible, setIsBlock3Visible] = useState(true);
+  const [hierarchy, setHierarchy] = useState<LocationHierarchyDTO | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LocationHierarchyDTO | null>(null);
+  const [selectedStation, setSelectedStation] = useState<StationDTO | null>(null);
+  const [hoveredStation, setHoveredStation] = useState<StationDTO | null>(null);
 
   const toggleBlock3 = () => {
     setIsBlock3Visible(!isBlock3Visible);
+  };
+
+  const handleHierarchyUpdate = (newHierarchy: LocationHierarchyDTO | null) => {
+    setHierarchy(newHierarchy);
+  };
+
+  const handleLocationSelect = (location: LocationHierarchyDTO | null) => {
+    setSelectedLocation(location);
+  };
+
+  const handleStationSelect = (station: StationDTO | null) => {
+    setSelectedStation(station);
+  };
+
+  const handleStationHover = (station: StationDTO | null) => {
+    setHoveredStation(station);
   };
 
   return (
@@ -32,9 +55,7 @@ const MainPage = () => {
 
         {/* Блок 3 */}
         <div className={`overflow-hidden transition-all duration-300 ${isBlock3Visible ? 'h-[150px] opacity-100 pr-[30px]' : 'h-0 opacity-0 pr-[30px]'}`}>
-          <div className="bg-gray-200 rounded flex items-center justify-center h-full">
-            <span className="text-gray-600 font-medium">В разработке</span>
-          </div>
+          <Dashboards />
         </div>
 
         {/* Отступ после блока 3 (60px) */}
@@ -44,12 +65,26 @@ const MainPage = () => {
         <div className="flex gap-[30px] pr-[30px] h-full min-h-0">
           {/* Блок 4 (левый) - ширина 500px */}
           <div className="w-[500px] flex-shrink-0">
-            <SecondBlock />
+            <SecondBlock 
+              onHierarchyUpdate={handleHierarchyUpdate}
+              onLocationSelect={handleLocationSelect}
+              onStationSelect={handleStationSelect}
+              onStationHover={handleStationHover}
+              selectedStation={selectedStation}
+              hoveredStation={hoveredStation}
+            />
           </div>
           
-          {/* Блок 5 (правый) - занимает оставшееся пространство */}
-          <div className="flex-grow bg-gray-200 rounded flex items-center justify-center">
-            <span className="text-gray-600 font-medium">В разработке</span>
+          {/* Блок 5 (правый) - теперь ThirdBlock */}
+          <div className="flex-grow">
+            <ThirdBlock 
+              hierarchy={hierarchy}
+              selectedLocation={selectedLocation}
+              onStationSelect={handleStationSelect}
+              onStationHover={handleStationHover}
+              selectedStation={selectedStation}
+              hoveredStation={hoveredStation}
+            />
           </div>
         </div>
       </div>

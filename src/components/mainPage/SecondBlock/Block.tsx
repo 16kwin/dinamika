@@ -21,8 +21,11 @@ export interface BlockProps {
   showHorizontalLine?: boolean;
   onAddButtonClick?: (e: React.MouseEvent, node: LocationHierarchyDTO | StationDTO) => void;
   onStationClick?: (station: StationDTO) => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   searchQuery?: string;
   isSearchMatch?: boolean;
+  isHovered?: boolean;
   blockStyle?: React.CSSProperties;
   highlightText?: (text: string, search: string) => React.ReactNode;
 }
@@ -38,8 +41,11 @@ const Block: React.FC<BlockProps> = ({
   showHorizontalLine = false,
   onAddButtonClick,
   onStationClick,
+  onMouseEnter,
+  onMouseLeave,
   searchQuery = '',
   isSearchMatch = false,
+  isHovered = false,
   blockStyle = {},
   highlightText
 }) => {
@@ -88,7 +94,20 @@ const Block: React.FC<BlockProps> = ({
     }
   };
 
-  // Функция для подсветки текста темно-синим цветом
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMouseEnter) {
+      onMouseEnter();
+    }
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMouseLeave) {
+      onMouseLeave();
+    }
+  };
+
   const defaultHighlightText = (text: string, search: string): React.ReactNode => {
     if (!search.trim() || !text) return text;
     
@@ -101,8 +120,8 @@ const Block: React.FC<BlockProps> = ({
               key={i} 
               className="font-medium"
               style={{ 
-                backgroundColor: '#3A4D8F', // Темно-синий цвет для подсветки
-                color: '#FFFFFF', // Белый текст для контраста
+                backgroundColor: '#3A4D8F',
+                color: '#FFFFFF',
                 padding: '0 2px',
                 borderRadius: '2px'
               }}
@@ -119,19 +138,18 @@ const Block: React.FC<BlockProps> = ({
 
   const renderHighlightedText = highlightText || defaultHighlightText;
 
-  // Безопасное получение строковых значений для станций
   const getStationText = (station: StationDTO, field: keyof StationDTO): string => {
     const value = station[field];
     return value !== undefined && value !== null ? String(value) : '';
   };
 
-  // Определяем цвет фона в зависимости от поиска
   const getBackgroundColor = () => {
+    if (isHovered) {
+      return '#FFE4B5';
+    }
     if (searchQuery.trim()) {
-      // Если есть поисковый запрос - светло-синий фон #C2D5FF
       return '#C2D5FF';
     }
-    // Если нет поиска - белый фон
     return '#FFFFFF';
   };
 
@@ -140,23 +158,25 @@ const Block: React.FC<BlockProps> = ({
       {showHorizontalLine && (
         <>
           <div 
-            className="absolute top-6 z-10"
+            className="absolute top-6"
             style={{
               left: '-25px',
-              width: '40px',
+              width: '25px',
               height: '1px',
-              backgroundColor: '#3E4E77'
+              backgroundColor: '#3E4E77',
+              zIndex: 20  // Увеличено до 20 - над блоками
             }}
           />
           <div 
-            className="absolute z-30 flex items-center justify-center"
+            className="absolute flex items-center justify-center"
             style={{
               left: '-4px',
               top: '20.5px',
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              backgroundColor: '#FFFFFF'
+              backgroundColor: '#FFFFFF',
+              zIndex: 21  // Увеличено до 21 - над линией
             }}
           >
             <div 
@@ -173,7 +193,9 @@ const Block: React.FC<BlockProps> = ({
       
       <div
         onClick={handleClick}
-        className="text-gray-800 rounded-lg shadow-md flex items-center relative z-20 font-roboto font-light hover:shadow-lg transition-shadow"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="text-gray-800 rounded-lg shadow-md flex items-center relative font-roboto font-light hover:shadow-lg transition-shadow"
         style={{
           width: `${width}px`,
           height: '45px',
@@ -184,6 +206,9 @@ const Block: React.FC<BlockProps> = ({
           fontSize: '17px',
           ...blockStyle,
           backgroundColor: getBackgroundColor(),
+          border: isHovered ? '2px solid #FFA500' : 'none',
+          transition: 'all 0.2s ease',
+          zIndex: 10  // Блоки на 10, кружочки на 20-21 - будут поверх
         }}
       >
         <div 

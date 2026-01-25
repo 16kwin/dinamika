@@ -1,4 +1,3 @@
-// SecondBlock.tsx
 import React, { useEffect, useState } from 'react';
 import AxiosService from '../../../services/AxiosService';
 import ConstantInfo from '../../../info/ConstantInfo';
@@ -9,7 +8,7 @@ import LocationTypeSelectionModal from './LocationTypeSelectionModal';
 import WorkshopCreateModal from './WorkshopCreateModal';
 import SectionCreateModal from './SectionCreateModal';
 import StationCreateModal from './StationCreateModal';
-import StationInfoModal from './StationInfoModal'; // ДОБАВЛЕНО
+import StationInfoModal from './StationInfoModal';
 import type { StationFormData } from './StationCreateModal';
 
 export interface StationDTO {
@@ -18,6 +17,14 @@ export interface StationDTO {
   modelNumber: string;
   serialNumber: string;
   currentCapacity: number;
+  // Новые поля
+  isEnabled: boolean;
+  capacity: number | null;
+  fullness: number | null;
+  hasErrors: boolean;
+  issued: number | null;
+  issuedOverNorm: number | null;
+  finishedParts: number | null;
 }
 
 export interface LocationHierarchyDTO {
@@ -40,12 +47,36 @@ interface CreateStationDTO {
   serialNumber: string;
   currentCapacity: string;
   ipAddress: string;
+  // Новые поля
+  isEnabled: boolean;
+  capacity: string;
+  fullness: string;
+  hasErrors: boolean;
+  issued: string;
+  issuedOverNorm: string;
+  finishedParts: string;
   level1FactoryId?: number;
   level2ObjectId?: number;
   level3ZoneId?: number;
 }
 
-const SecondBlock = () => {
+interface SecondBlockProps {
+  onHierarchyUpdate: (hierarchy: LocationHierarchyDTO | null) => void;
+  onLocationSelect: (location: LocationHierarchyDTO | null) => void;
+  onStationSelect: (station: StationDTO | null) => void;
+  onStationHover: (station: StationDTO | null) => void;
+  selectedStation: StationDTO | null;
+  hoveredStation: StationDTO | null;
+}
+
+const SecondBlock: React.FC<SecondBlockProps> = ({ 
+  onHierarchyUpdate,
+  onLocationSelect, 
+  onStationSelect,
+  onStationHover,
+  selectedStation,
+  hoveredStation 
+}) => {
   const [hierarchy, setHierarchy] = useState<LocationHierarchyDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,13 +86,12 @@ const SecondBlock = () => {
   const [workshopModalOpen, setWorkshopModalOpen] = useState(false);
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
   const [stationModalOpen, setStationModalOpen] = useState(false);
-  const [stationInfoModalOpen, setStationInfoModalOpen] = useState(false); // ДОБАВЛЕНО
+  const [stationInfoModalOpen, setStationInfoModalOpen] = useState(false);
   
   const [selectedNode, setSelectedNode] = useState<LocationHierarchyDTO | null>(null);
   const [selectedNodeType, setSelectedNodeType] = useState<'factory' | 'workshop' | null>(null);
-  const [selectedStation, setSelectedStation] = useState<StationDTO | null>(null); // ДОБАВЛЕНО
+  const [currentSelectedLocation, setCurrentSelectedLocation] = useState<LocationHierarchyDTO | null>(null);
 
-  // Функции для обновления иерархии локально
   const addWorkshopToHierarchy = (
     hierarchy: LocationHierarchyDTO | null,
     parentId: number,
@@ -242,6 +272,7 @@ const SecondBlock = () => {
       }
       
       setHierarchy(hierarchyData);
+      onHierarchyUpdate(hierarchyData);
       
       if (!hierarchyData) {
         setError('Нет данных для отображения');
@@ -254,6 +285,7 @@ const SecondBlock = () => {
       
       setError(errorMessage);
       console.error('Ошибка загрузки:', err);
+      onHierarchyUpdate(null);
     } finally {
       setLoading(false);
     }
@@ -288,11 +320,18 @@ const SecondBlock = () => {
     }
   };
 
-  // ДОБАВЛЕН обработчик клика по станции
+  const handleLocationClick = (location: LocationHierarchyDTO) => {
+    setCurrentSelectedLocation(location);
+    onLocationSelect(location);
+  };
+
   const handleStationClick = (station: StationDTO) => {
-    console.log('Station clicked:', station);
-    setSelectedStation(station);
+    onStationSelect(station);
     setStationInfoModalOpen(true);
+  };
+
+  const handleStationHover = (station: StationDTO | null) => {
+    onStationHover(station);
   };
 
   const handleTypeSelect = (type: 'workshop' | 'section' | 'station') => {
@@ -318,7 +357,6 @@ const SecondBlock = () => {
       const response = await AxiosService.post(ConstantInfo.restApiCreateLocation, createLocationDTO);
       
       if (response.data && response.data.id) {
-        // Обновляем иерархию локально без перезагрузки
         const newWorkshop = {
           id: response.data.id,
           name: response.data.locationName || name,
@@ -327,8 +365,10 @@ const SecondBlock = () => {
         
         const updatedHierarchy = addWorkshopToHierarchy(hierarchy, parentId, newWorkshop);
         setHierarchy(updatedHierarchy);
+        if (updatedHierarchy) {
+          onHierarchyUpdate(updatedHierarchy);
+        }
       } else {
-        // Если нет данных в ответе, делаем полную перезагрузку
         await fetchHierarchy();
       }
       
@@ -355,7 +395,6 @@ const SecondBlock = () => {
       const response = await AxiosService.post(ConstantInfo.restApiCreateLocation, createLocationDTO);
       
       if (response.data && response.data.id) {
-        // Обновляем иерархию локально без перезагрузки
         const newSection = {
           id: response.data.id,
           name: response.data.locationName || name,
@@ -364,6 +403,9 @@ const SecondBlock = () => {
         
         const updatedHierarchy = addSectionToHierarchy(hierarchy, parentId, newSection);
         setHierarchy(updatedHierarchy);
+        if (updatedHierarchy) {
+          onHierarchyUpdate(updatedHierarchy);
+        }
       } else {
         await fetchHierarchy();
       }
@@ -421,6 +463,14 @@ const SecondBlock = () => {
         serialNumber: stationData.serialNumber,
         currentCapacity: stationData.currentCapacity,
         ipAddress: stationData.ipAddress,
+        // Новые поля
+        isEnabled: stationData.isEnabled,
+        capacity: stationData.capacity,
+        fullness: stationData.fullness,
+        hasErrors: stationData.hasErrors,
+        issued: stationData.issued,
+        issuedOverNorm: stationData.issuedOverNorm,
+        finishedParts: stationData.finishedParts,
         level1FactoryId: level1FactoryId,
         level2ObjectId: level2ObjectId,
         level3ZoneId: level3ZoneId
@@ -429,18 +479,33 @@ const SecondBlock = () => {
       const response = await AxiosService.post(ConstantInfo.restApiCreateStation, createStationDTO);
       
       if (response.data && response.data.uid) {
-        // Обновляем иерархию локально без перезагрузки
         const newStation: StationDTO = {
           uid: response.data.uid,
           stationName: response.data.stationName || stationData.stationName,
           modelNumber: response.data.modelNumber || stationData.modelNumber,
           serialNumber: response.data.serialNumber || stationData.serialNumber,
-          currentCapacity: response.data.currentCapacity || parseInt(stationData.currentCapacity)
+          currentCapacity: response.data.currentCapacity || parseInt(stationData.currentCapacity),
+          // Новые поля
+          isEnabled: response.data.isEnabled !== undefined ? response.data.isEnabled : stationData.isEnabled,
+          capacity: response.data.capacity !== undefined ? response.data.capacity : 
+                   (stationData.capacity ? parseInt(stationData.capacity) : null),
+          fullness: response.data.fullness !== undefined ? response.data.fullness : 
+                   (stationData.fullness ? parseInt(stationData.fullness) : null),
+          hasErrors: response.data.hasErrors !== undefined ? response.data.hasErrors : stationData.hasErrors,
+          issued: response.data.issued !== undefined ? response.data.issued : 
+                 (stationData.issued ? parseInt(stationData.issued) : null),
+          issuedOverNorm: response.data.issuedOverNorm !== undefined ? response.data.issuedOverNorm : 
+                         (stationData.issuedOverNorm ? parseInt(stationData.issuedOverNorm) : null),
+          finishedParts: response.data.finishedParts !== undefined ? response.data.finishedParts : 
+                        (stationData.finishedParts ? parseInt(stationData.finishedParts) : null)
         };
         
         const parentId = level3ZoneId || level2ObjectId || level1FactoryId;
         const updatedHierarchy = addStationToHierarchy(hierarchy, parentId, newStation);
         setHierarchy(updatedHierarchy);
+        if (updatedHierarchy) {
+          onHierarchyUpdate(updatedHierarchy);
+        }
       } else {
         await fetchHierarchy();
       }
@@ -458,15 +523,15 @@ const SecondBlock = () => {
     setWorkshopModalOpen(false);
     setSectionModalOpen(false);
     setStationModalOpen(false);
-    setStationInfoModalOpen(false); // ДОБАВЛЕНО
+    setStationInfoModalOpen(false);
     setSelectedNode(null);
     setSelectedNodeType(null);
-    setSelectedStation(null); // ДОБАВЛЕНО
   };
 
   const closeStationInfoModal = () => {
     setStationInfoModalOpen(false);
-    setSelectedStation(null);
+    onStationSelect(null);
+    onStationHover(null);
   };
 
   if (loading) {
@@ -512,7 +577,10 @@ const SecondBlock = () => {
           hierarchy={hierarchy}
           searchQuery={searchQuery}
           onAddButtonClick={handleAddButtonClick}
-          onStationClick={handleStationClick} // ПЕРЕДАЕМ ОБРАБОТЧИК
+          onStationClick={handleStationClick}
+          onStationHover={handleStationHover}
+          onLocationClick={handleLocationClick}
+          hoveredStation={hoveredStation}
         />
       </div>
 
@@ -553,7 +621,6 @@ const SecondBlock = () => {
         />
       )}
 
-      {/* ДОБАВЛЕН StationInfoModal */}
       <StationInfoModal
         isOpen={stationInfoModalOpen}
         onClose={closeStationInfoModal}

@@ -13,6 +13,13 @@ export interface StationFormData {
   serialNumber: string;
   currentCapacity: string;
   ipAddress: string;
+  isEnabled: boolean;
+  capacity: string;
+  fullness: string;
+  hasErrors: boolean;
+  issued: string;
+  issuedOverNorm: string;
+  finishedParts: string;
 }
 
 const StationCreateModal: React.FC<StationCreateModalProps> = ({
@@ -26,7 +33,14 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
     modelNumber: '',
     serialNumber: '',
     currentCapacity: '',
-    ipAddress: ''
+    ipAddress: '',
+    isEnabled: true,
+    capacity: '',
+    fullness: '',
+    hasErrors: false,
+    issued: '',
+    issuedOverNorm: '',
+    finishedParts: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -36,7 +50,7 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.stationName.trim()) {
-      newErrors.stationName = 'Название станка обязательно';
+      newErrors.stationName = 'Название станки обязательно';
     }
 
     if (!formData.modelNumber.trim()) {
@@ -52,15 +66,35 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
     }
 
     if (!formData.currentCapacity.trim()) {
-      newErrors.currentCapacity = 'Емкость обязательна';
+      newErrors.currentCapacity = 'Текущая емкость обязательна';
     } else if (!/^\d+$/.test(formData.currentCapacity)) {
-      newErrors.currentCapacity = 'Емкость должна быть числом';
+      newErrors.currentCapacity = 'Текущая емкость должна быть числом';
     }
 
     if (!formData.ipAddress.trim()) {
       newErrors.ipAddress = 'IP адрес обязателен';
     } else if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(formData.ipAddress)) {
       newErrors.ipAddress = 'Введите корректный IP адрес';
+    }
+
+    if (formData.capacity && !/^\d+$/.test(formData.capacity)) {
+      newErrors.capacity = 'Вместимость должна быть числом';
+    }
+
+    if (formData.fullness && !/^\d+$/.test(formData.fullness)) {
+      newErrors.fullness = 'Заполненность должна быть числом';
+    }
+
+    if (formData.issued && !/^\d+$/.test(formData.issued)) {
+      newErrors.issued = 'Выдано должно быть числом';
+    }
+
+    if (formData.issuedOverNorm && !/^\d+$/.test(formData.issuedOverNorm)) {
+      newErrors.issuedOverNorm = 'Выдано сверхнормы должно быть числом';
+    }
+
+    if (formData.finishedParts && !/^\d+$/.test(formData.finishedParts)) {
+      newErrors.finishedParts = 'Готовых деталей должно быть числом';
     }
 
     setErrors(newErrors);
@@ -78,17 +112,24 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
         modelNumber: '',
         serialNumber: '',
         currentCapacity: '',
-        ipAddress: ''
+        ipAddress: '',
+        isEnabled: true,
+        capacity: '',
+        fullness: '',
+        hasErrors: false,
+        issued: '',
+        issuedOverNorm: '',
+        finishedParts: ''
       });
       setErrors({});
     }
   };
 
-  const handleChange = (field: keyof StationFormData, value: string) => {
+  const handleChange = (field: keyof StationFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Очищаем ошибку при изменении поля
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+    if (errors[field as string]) {
+      setErrors(prev => ({ ...prev, [field as string]: '' }));
     }
   };
 
@@ -103,7 +144,7 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackgroundClick}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           {/* Заголовок */}
           <div className="px-6 py-4 border-b border-gray-200">
@@ -115,28 +156,29 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
 
           {/* Поля формы */}
           <div className="p-6 space-y-4">
-            {/* Название станка */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название станции *
-              </label>
-              <input
-                type="text"
-                value={formData.stationName}
-                onChange={(e) => handleChange('stationName', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.stationName ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Введите название станка"
-                autoFocus
-              />
-              {errors.stationName && (
-                <div className="mt-1 text-sm text-red-600">{errors.stationName}</div>
-              )}
-            </div>
-
-            {/* Модель и серийный номер в одну строку */}
+            {/* Основные поля */}
             <div className="grid grid-cols-2 gap-4">
+              {/* Название станции */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название станции *
+                </label>
+                <input
+                  type="text"
+                  value={formData.stationName}
+                  onChange={(e) => handleChange('stationName', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.stationName ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Введите название станции"
+                  autoFocus
+                />
+                {errors.stationName && (
+                  <div className="mt-1 text-sm text-red-600">{errors.stationName}</div>
+                )}
+              </div>
+
+              {/* Модель и серийный номер */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Модель *
@@ -172,10 +214,8 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
                   <div className="mt-1 text-sm text-red-600">{errors.serialNumber}</div>
                 )}
               </div>
-            </div>
 
-            {/* Емкость и IP адрес */}
-            <div className="grid grid-cols-2 gap-4">
+              {/* Емкость и IP адрес */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Текущая емкость *
@@ -209,6 +249,156 @@ const StationCreateModal: React.FC<StationCreateModalProps> = ({
                 />
                 {errors.ipAddress && (
                   <div className="mt-1 text-sm text-red-600">{errors.ipAddress}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Новые поля - группа */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Включено/Выключено */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Статус станции
+                </label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.isEnabled === true}
+                      onChange={() => handleChange('isEnabled', true)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Включена</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.isEnabled === false}
+                      onChange={() => handleChange('isEnabled', false)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Выключена</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Ошибки */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Наличие ошибок
+                </label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.hasErrors === false}
+                      onChange={() => handleChange('hasErrors', false)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Нет ошибок</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.hasErrors === true}
+                      onChange={() => handleChange('hasErrors', true)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Есть ошибки</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Вместимость и Заполненность */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Вместимость
+                </label>
+                <input
+                  type="text"
+                  value={formData.capacity}
+                  onChange={(e) => handleChange('capacity', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.capacity ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Вместимость"
+                />
+                {errors.capacity && (
+                  <div className="mt-1 text-sm text-red-600">{errors.capacity}</div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Заполненность
+                </label>
+                <input
+                  type="text"
+                  value={formData.fullness}
+                  onChange={(e) => handleChange('fullness', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.fullness ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Заполненность"
+                />
+                {errors.fullness && (
+                  <div className="mt-1 text-sm text-red-600">{errors.fullness}</div>
+                )}
+              </div>
+
+              {/* Выдано и Выдано сверхнормы */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Выдано
+                </label>
+                <input
+                  type="text"
+                  value={formData.issued}
+                  onChange={(e) => handleChange('issued', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.issued ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Выдано"
+                />
+                {errors.issued && (
+                  <div className="mt-1 text-sm text-red-600">{errors.issued}</div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Выдано сверхнормы
+                </label>
+                <input
+                  type="text"
+                  value={formData.issuedOverNorm}
+                  onChange={(e) => handleChange('issuedOverNorm', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.issuedOverNorm ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Выдано сверхнормы"
+                />
+                {errors.issuedOverNorm && (
+                  <div className="mt-1 text-sm text-red-600">{errors.issuedOverNorm}</div>
+                )}
+              </div>
+
+              {/* Готовых деталей */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Готовых деталей в станции
+                </label>
+                <input
+                  type="text"
+                  value={formData.finishedParts}
+                  onChange={(e) => handleChange('finishedParts', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.finishedParts ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Готовых деталей"
+                />
+                {errors.finishedParts && (
+                  <div className="mt-1 text-sm text-red-600">{errors.finishedParts}</div>
                 )}
               </div>
             </div>

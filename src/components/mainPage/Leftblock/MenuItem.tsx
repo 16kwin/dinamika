@@ -44,7 +44,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             ${isExpanded ? 'rounded-l-[15px]' : 'rounded-[15px]'}
             hover:transform
             hover:translate-y-[-2px]
-            z-10
+            z-1000
           `}
           style={{
             width: isExpanded ? 'calc(100% - 15px)' : '60px',
@@ -96,7 +96,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             ${isExpanded ? 'rounded-l-[15px]' : 'rounded-[15px]'}
             hover:transform
             hover:translate-y-[-2px]
-            z-10
+            z-1000
           `}
           style={{
             width: isExpanded ? 'calc(100% - 15px)' : '60px',

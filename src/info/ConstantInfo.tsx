@@ -11,8 +11,11 @@ const ConstantInfo = {
   restApiLogout: '/logout',
   checkAuthPeriod: 50000, // таймер проверки авторизации (в мс)
   restApiLocationHierarchy: '/api/locations/hierarchy/first',
-   restApiCreateLocation: '/api/locations',
+  restApiCreateLocation: '/api/locations',
   restApiCreateStation: '/api/stations',
+  
+  // Новый эндпоинт для Dashboard
+  restApiDashboardStats: '/api/dashboard/stats',
 };
 
 export default ConstantInfo;
