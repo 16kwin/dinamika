@@ -1,7 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { LocationHierarchyDTO, StationDTO } from './SecondBlock';
 import Block from './Block';
 import type { BlockType } from './Block';
+import { useDrag } from '../../../contexts/DragContext';
+import { useCustomDrag } from '../../../contexts/CustomDragContext';
 
 interface TreeProps {
   hierarchy: LocationHierarchyDTO | null;
@@ -24,6 +26,10 @@ const Tree: React.FC<TreeProps> = ({
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [closingNodes, setClosingNodes] = useState<Set<number>>(new Set());
+  const [draggedStationId, setDraggedStationId] = useState<number | null>(null);
+  const { setDragData, clearDragData } = useDrag();
+  const { startDrag, isDragging } = useCustomDrag();
+  const stationRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   useEffect(() => {
     if (!hierarchy || !searchQuery.trim()) return;
@@ -58,6 +64,12 @@ const Tree: React.FC<TreeProps> = ({
     findMatchingNodes(hierarchy, newExpanded);
     setExpandedNodes(newExpanded);
   }, [searchQuery, hierarchy]);
+
+  useEffect(() => {
+    if (!isDragging) {
+      setDraggedStationId(null);
+    }
+  }, [isDragging]);
 
   const toggleNode = (id: number) => {
     const newExpanded = new Set(expandedNodes);
@@ -160,7 +172,6 @@ const Tree: React.FC<TreeProps> = ({
     );
   };
 
-  // Вычисляем высоту всех детей рекурсивно
   const calculateChildrenHeight = (
     node: LocationHierarchyDTO
   ): number => {
@@ -179,11 +190,10 @@ const Tree: React.FC<TreeProps> = ({
         totalHeight += marginBetween;
       }
       
-      // Если ребенок развернут - добавляем высоту его детей
       if (expandedNodes.has(child.id)) {
         const childHeight = calculateChildrenHeight(child);
         if (childHeight > 0) {
-          totalHeight += 25; // Отступ перед детьми
+          totalHeight += 25;
           totalHeight += childHeight;
         }
       }
@@ -199,7 +209,6 @@ const Tree: React.FC<TreeProps> = ({
     return totalHeight;
   };
 
-  // Вычисляем высоту с учетом развернутых элементов (кроме последнего)
   const calculateVerticalLineHeight = (
     childLocations: LocationHierarchyDTO[], 
     stations: StationDTO[]
@@ -210,40 +219,33 @@ const Tree: React.FC<TreeProps> = ({
     const marginBetween = 25;
     const totalElements = childLocations.length + stations.length;
     
-    // Обрабатываем дочерние локации (кроме последней)
     for (let i = 0; i < childLocations.length; i++) {
       const child = childLocations[i];
       const isLastElement = i === childLocations.length - 1 && stations.length === 0;
       
       totalHeight += blockHeight;
       
-      // Отступ между элементами (кроме последнего)
       if (i < childLocations.length - 1 || stations.length > 0) {
         totalHeight += marginBetween;
       }
       
-      // Если элемент развернут И он НЕ последний - учитываем его детей
       if (expandedNodes.has(child.id) && !isLastElement) {
         const childHeight = calculateChildrenHeight(child);
         if (childHeight > 0) {
-          totalHeight += 25; // Отступ перед детьми
+          totalHeight += 25;
           totalHeight += childHeight;
         }
       }
     }
     
-    // Обрабатываем станции (все кроме последней)
     for (let i = 0; i < stations.length; i++) {
       const isLastElement = i === stations.length - 1;
       
       totalHeight += blockHeight;
       
-      // Отступ между элементами (кроме последнего)
       if (i < stations.length - 1) {
         totalHeight += marginBetween;
       }
-      
-      // Станции не имеют детей, поэтому ничего не добавляем
     }
     
     return totalHeight;
@@ -252,6 +254,70 @@ const Tree: React.FC<TreeProps> = ({
   const handleStationHover = (station: StationDTO | null) => {
     if (onStationHover) {
       onStationHover(station);
+    }
+  };
+
+  const handleStationCustomDragStart = (station: StationDTO, e: React.MouseEvent) => {
+    console.log('🎯 Начало кастомного перетаскивания станции из дерева:', {
+      id: station.uid,
+      name: station.stationName,
+      clientX: e.clientX,
+      clientY: e.clientY
+    });
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setDraggedStationId(station.uid);
+    
+    const data = {
+      stationId: station.uid,
+      stationName: station.stationName || `Станция ${station.uid}`,
+      source: 'tree' as const,
+    };
+    
+    setDragData(data);
+    (window as any).__dinamikaDragData = {
+      data,
+      timestamp: Date.now()
+    };
+    
+    startDrag(data, e);
+    
+    console.log('✅ Кастомный drag запущен');
+  };
+
+  const handleStationDragStart = (e: React.DragEvent, station: StationDTO) => {
+    console.log('🚀 Начало стандартного перетаскивания станции из дерева');
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const transparentImage = new Image();
+    transparentImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(transparentImage, 0, 0);
+    
+    const data = {
+      stationId: station.uid,
+      stationName: station.stationName || `Станция ${station.uid}`,
+      source: 'tree' as const,
+    };
+    
+    try {
+      const jsonData = JSON.stringify(data);
+      e.dataTransfer.setData('text/plain', jsonData);
+      e.dataTransfer.setData('application/x-dinamika-drag', jsonData);
+      e.dataTransfer.effectAllowed = 'move';
+    } catch (err) {
+      console.error('❌ Ошибка установки данных:', err);
+    }
+  };
+
+  const handleStationDragEnd = (e: React.DragEvent) => {
+    console.log('🏁 Стандартное перетаскивание из дерева завершено');
+    
+    if (e.dataTransfer.dropEffect !== 'move') {
+      setDraggedStationId(null);
     }
   };
 
@@ -277,7 +343,6 @@ const Tree: React.FC<TreeProps> = ({
       boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)'
     };
 
-    // Вычисляем высоту вертикальной линии (учитываем развернутые элементы, кроме последнего)
     const verticalLineHeight = calculateVerticalLineHeight(childLocations, stations);
 
     return (
@@ -315,12 +380,11 @@ const Tree: React.FC<TreeProps> = ({
             }}
           >
             
-            {/* Вертикальная линия - учитывает развернутые элементы, кроме последнего */}
             <div style={{
               position: 'absolute',
               top: '-54px',
               left: '-25px',
-              height: `calc(${verticalLineHeight}px + 34px)`, // +54px чтобы закрыть отступ сверху
+              height: `calc(${verticalLineHeight}px + 34px)`,
               width: '1px',
               backgroundColor: '#3E4E77',
               zIndex: 1
@@ -354,7 +418,12 @@ const Tree: React.FC<TreeProps> = ({
                   station.serialNumber?.toString().toLowerCase().includes(normalizedQuery);
                 
                 const stationBlockStyle: React.CSSProperties = {
-                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)'
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
+                  ...(draggedStationId === station.uid ? {
+                    opacity: 0.3,
+                    transform: 'scale(0.95)',
+                    transition: 'opacity 0.2s, transform 0.2s',
+                  } : {})
                 };
                 
                 const isLastStation = index === stations.length - 1;
@@ -364,6 +433,13 @@ const Tree: React.FC<TreeProps> = ({
                 return (
                   <div 
                     key={`stat-${station.uid}`}
+                    ref={(el) => {
+                      if (el) {
+                        stationRefs.current.set(station.uid, el);
+                      } else {
+                        stationRefs.current.delete(station.uid);
+                      }
+                    }}
                     style={{
                       position: 'relative',
                       marginBottom: isLastStation ? '0px' : '25px',
@@ -386,6 +462,10 @@ const Tree: React.FC<TreeProps> = ({
                       isHovered={isHovered}
                       blockStyle={stationBlockStyle}
                       highlightText={highlightText}
+                      draggable={true}
+                      onDragStart={(e) => handleStationDragStart(e, station)}
+                      onDragEnd={handleStationDragEnd}
+                      onCustomDragStart={(e) => handleStationCustomDragStart(station, e)}
                     />
                   </div>
                 );

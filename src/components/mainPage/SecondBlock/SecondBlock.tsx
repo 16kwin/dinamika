@@ -12,7 +12,7 @@ import StationInfoModal from './StationInfoModal';
 import type { StationFormData } from './StationCreateModal';
 
 export interface StationDTO {
-  uid: string;
+  uid: number; // ИСПРАВЛЕНО: только uid, убрали id
   stationName: string;
   modelNumber: string;
   serialNumber: string;
@@ -271,6 +271,26 @@ const SecondBlock: React.FC<SecondBlockProps> = ({
         hierarchyData = response.data;
       }
       
+      // ИСПРАВЛЕНО: Преобразуем станции, используя uid как основной идентификатор
+      const convertStationUids = (node: LocationHierarchyDTO): LocationHierarchyDTO => {
+        const stations = (node.stations || []).map(station => ({
+          ...station,
+          uid: Number(station.uid) // uid - основной идентификатор
+        }));
+        
+        const childLocations = (node.childLocations || []).map(child => convertStationUids(child));
+        
+        return {
+          ...node,
+          stations,
+          childLocations
+        };
+      };
+      
+      if (hierarchyData) {
+        hierarchyData = convertStationUids(hierarchyData);
+      }
+      
       setHierarchy(hierarchyData);
       onHierarchyUpdate(hierarchyData);
       
@@ -480,7 +500,7 @@ const SecondBlock: React.FC<SecondBlockProps> = ({
       
       if (response.data && response.data.uid) {
         const newStation: StationDTO = {
-          uid: response.data.uid,
+          uid: response.data.uid, // ИСПРАВЛЕНО: только uid
           stationName: response.data.stationName || stationData.stationName,
           modelNumber: response.data.modelNumber || stationData.modelNumber,
           serialNumber: response.data.serialNumber || stationData.serialNumber,

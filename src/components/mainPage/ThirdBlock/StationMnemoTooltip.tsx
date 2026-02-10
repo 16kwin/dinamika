@@ -10,6 +10,7 @@ interface StationMnemoTooltipProps {
   };
   isVisible: boolean;
   onClose: () => void;
+  onClick?: () => void;
 }
 
 const StationMnemoTooltip: React.FC<StationMnemoTooltipProps> = ({
@@ -17,9 +18,10 @@ const StationMnemoTooltip: React.FC<StationMnemoTooltipProps> = ({
   stationPath,
   position,
   isVisible,
-  onClose
+  onClose,
+  onClick
 }) => {
-  if (!isVisible) return null;
+  if (!isVisible || !station) return null; // Добавил проверку на station
 
   // Определяем цвет кружка по новой логике
   const getCircleColor = (): string => {
@@ -72,7 +74,10 @@ const StationMnemoTooltip: React.FC<StationMnemoTooltipProps> = ({
           top: `${position.top}px`,
           left: `${position.left}px`,
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onClick) onClick();
+        }}
       >
         {/* ШАПКА - весь текст */}
         <div className="relative p-0" style={{ height: '40px' }}>

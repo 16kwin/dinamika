@@ -28,6 +28,7 @@ export interface BlockProps {
   isHovered?: boolean;
   blockStyle?: React.CSSProperties;
   highlightText?: (text: string, search: string) => React.ReactNode;
+  onCustomDragStart?: (e: React.MouseEvent) => void;
 }
 
 const Block: React.FC<BlockProps> = ({ 
@@ -47,7 +48,8 @@ const Block: React.FC<BlockProps> = ({
   isSearchMatch = false,
   isHovered = false,
   blockStyle = {},
-  highlightText
+  highlightText,
+  onCustomDragStart
 }) => {
   const calculateWidth = () => {
     switch (blockType) {
@@ -108,6 +110,14 @@ const Block: React.FC<BlockProps> = ({
     }
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isStation && onCustomDragStart && e.button === 0) { // Левая кнопка мыши
+      e.preventDefault();
+      e.stopPropagation();
+      onCustomDragStart(e);
+    }
+  };
+
   const defaultHighlightText = (text: string, search: string): React.ReactNode => {
     if (!search.trim() || !text) return text;
     
@@ -164,7 +174,7 @@ const Block: React.FC<BlockProps> = ({
               width: '25px',
               height: '1px',
               backgroundColor: '#3E4E77',
-              zIndex: 20  // Увеличено до 20 - над блоками
+              zIndex: 20
             }}
           />
           <div 
@@ -176,7 +186,7 @@ const Block: React.FC<BlockProps> = ({
               height: '8px',
               borderRadius: '50%',
               backgroundColor: '#FFFFFF',
-              zIndex: 21  // Увеличено до 21 - над линией
+              zIndex: 21
             }}
           >
             <div 
@@ -195,11 +205,12 @@ const Block: React.FC<BlockProps> = ({
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="text-gray-800 rounded-lg shadow-md flex items-center relative font-roboto font-light hover:shadow-lg transition-shadow"
+        onMouseDown={isStation ? handleMouseDown : undefined}
+        className="text-gray-800 rounded-lg shadow-md flex items-center relative font-roboto font-light hover:shadow-lg transition-shadow select-none"
         style={{
           width: `${width}px`,
           height: '45px',
-          cursor: 'pointer',
+          cursor: isStation ? 'grab' : 'pointer',
           marginRight: '80px',
           paddingLeft: '51px',
           paddingRight: '25px',
@@ -208,7 +219,8 @@ const Block: React.FC<BlockProps> = ({
           backgroundColor: getBackgroundColor(),
           border: isHovered ? '2px solid #FFA500' : 'none',
           transition: 'all 0.2s ease',
-          zIndex: 10  // Блоки на 10, кружочки на 20-21 - будут поверх
+          zIndex: 10,
+          userSelect: 'none'
         }}
       >
         <div 
@@ -227,8 +239,10 @@ const Block: React.FC<BlockProps> = ({
             style={{
               width: `${iconConfig.width}px`,
               height: `${iconConfig.height}px`,
-              objectFit: 'contain'
+              objectFit: 'contain',
+              pointerEvents: 'none'
             }}
+            draggable="false"
           />
         </div>
         

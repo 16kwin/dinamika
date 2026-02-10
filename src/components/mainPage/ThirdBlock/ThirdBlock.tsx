@@ -23,18 +23,30 @@ const ThirdBlock: React.FC<ThirdBlockProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'mnemonic' | 'interactive'>('mnemonic');
   const [stationInfoModalOpen, setStationInfoModalOpen] = useState(false);
+  const [stationForModal, setStationForModal] = useState<StationDTO | null>(null);
 
   const handleTabClick = (tab: 'mnemonic' | 'interactive') => {
     setActiveTab(tab);
+    // Закрываем тултип при переключении вкладок
+    onStationSelect(null);
+    setStationForModal(null);
   };
 
-  const handleStationSelect = (station: StationDTO) => {
+  const handleStationSelectFromMnemo = (station: StationDTO) => {
     onStationSelect(station);
+    setStationForModal(station);
     setStationInfoModalOpen(true);
+  };
+
+  const handleStationSelectFromInter = (station: StationDTO | null) => {
+    onStationSelect(station);
+    // В интерактивной карте НЕ открываем модальное окно, только передаем станцию
+    // для подсветки в дереве
   };
 
   const closeStationInfoModal = () => {
     setStationInfoModalOpen(false);
+    setStationForModal(null);
     onStationSelect(null);
     onStationHover(null);
   };
@@ -166,9 +178,6 @@ const ThirdBlock: React.FC<ThirdBlockProps> = ({
           </div>
         </div>
 
-        {/* Отступ после переключателя */}
-        <div className="h-8"></div>
-
         {/* Контейнер для контента с отступом снизу 50px */}
         <div className="flex-1 flex flex-col">
           {/* Контентная область - переключается между Mnemo и Inter */}
@@ -177,12 +186,21 @@ const ThirdBlock: React.FC<ThirdBlockProps> = ({
               <Mnemo 
                 hierarchy={hierarchy}
                 selectedLocation={selectedLocation}
-                onStationClick={handleStationSelect}
+                onStationClick={handleStationSelectFromMnemo} // Только в мнемокарте открываем модалку
                 onStationHover={onStationHover}
                 hoveredStation={hoveredStation}
               />
             ) : (
-              <Inter />
+              <Inter 
+                selectedLocationId={selectedLocation?.id || null}
+                selectedLocationName={selectedLocation?.locationName || null}
+                selectedLocationLevel={selectedLocation?.level || null}
+                // ДОБАВЛЯЕМ НОВЫЕ ПРОПСЫ:
+                onStationHover={onStationHover}
+                onStationSelect={handleStationSelectFromInter} // В интерактивной карте НЕ открываем модалку
+                hoveredStation={hoveredStation}
+                hierarchy={hierarchy}
+              />
             )}
           </div>
           
@@ -191,11 +209,11 @@ const ThirdBlock: React.FC<ThirdBlockProps> = ({
         </div>
       </div>
 
-      {/* Модальное окно информации о станции */}
+      {/* Модальное окно информации о станции (только для мнемокарты) */}
       <StationInfoModal
         isOpen={stationInfoModalOpen}
         onClose={closeStationInfoModal}
-        station={selectedStation}
+        station={stationForModal}
       />
     </div>
   );

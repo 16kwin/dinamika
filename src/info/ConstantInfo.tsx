@@ -16,6 +16,24 @@ const ConstantInfo = {
   
   // Новый эндпоинт для Dashboard
   restApiDashboardStats: '/api/dashboard/stats',
+  
+  // Эндпоинты для фото локаций
+  restApiUploadLocationPhoto: (locationId: number) => `/api/locations/${locationId}/photo`,
+  restApiGetLocationPhoto: (locationId: number) => `/api/locations/${locationId}/photo`,
+  restApiDeleteLocationPhoto: (locationId: number) => `/api/locations/${locationId}/photo`,
+  
+  // Новые эндпоинты для позиций станций
+  restApiCreateOrUpdateStationPosition: '/api/station-positions',
+  restApiGetStationPositionsByLocation: (locationId: number) => `/api/station-positions/location/${locationId}`,
+  restApiGetStationPositionsByStation: (stationId: number) => `/api/station-positions/station/${stationId}`,
+  restApiGetStationPosition: (stationId: number, locationId: number) => `/api/station-positions/${stationId}/${locationId}`,
+  restApiDeleteStationPosition: (stationId: number, locationId: number) => `/api/station-positions/${stationId}/${locationId}`,
+  restApiDeleteAllStationPositionsByStation: (stationId: number) => `/api/station-positions/station/${stationId}`,
+  restApiDeleteAllStationPositionsByLocation: (locationId: number) => `/api/station-positions/location/${locationId}`,
+  
+  // URL для прямого доступа к файлу
+  getLocationPhotoUrl: (filePath: string, fileName: string) => 
+    `${ConstantInfo.fileDir}uploads/${filePath}${fileName}`,
 };
 
 export default ConstantInfo;
